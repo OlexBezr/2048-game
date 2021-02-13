@@ -61,7 +61,6 @@ class _2048_view:
 				})
 
 				index_ +=1
-		print(game_field)
 		return game_field
 
 	@classmethod
