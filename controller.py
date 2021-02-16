@@ -28,43 +28,56 @@ model_.add_random_block_to_field(game_field)
 
 
 def do_after_event(game_field) : 
-	model_.add_random_block_to_field(game_field)
 	view_.print_in_cmd(game_field)
-	# view_.draw_field(pg, screen, game_field)
-
-#border
-for row in game_field: 
-	for block in row: 
-		pg.draw.rect( screen, (191,173,163), ( block['position']['x'], block['position']['y'], block['width'], block['height']), 10)
 
 while 1:
-	clock.tick(60)
+	clock.tick(10)
 	for event in pg.event.get():
 		if event.type == pg.QUIT : 
 			sys.exit()
 
 		if event.type == pg.KEYDOWN: 
 			if event.key == pg.K_UP:
-				model_.move_top(game_field)
-				
+				move = model_.move_top(game_field)
+				if move == True : # если никакого движения не произошло не добавлять блок
+					model_.add_random_block_to_field(game_field)
+
 				do_after_event(game_field)
 
 			if event.key == pg.K_LEFT:
-				model_.move_left(game_field)
+				move = model_.move_left(game_field)
+				if move == True : # если никакого движения не произошло не добавлять блок
+					model_.add_random_block_to_field(game_field)
 				do_after_event(game_field)
 
 			if event.key == pg.K_DOWN:
-				model_.move_down(game_field)
+				move = model_.move_down(game_field)
+				if move == True : # если никакого движения не произошло не добавлять блок
+					model_.add_random_block_to_field(game_field)
 				do_after_event(game_field)
 
 			if event.key == pg.K_RIGHT:
-				model_.move_right(game_field)
+				move = model_.move_right(game_field)
+				if move == True : # если никакого движения не произошло не добавлять блок
+					model_.add_random_block_to_field(game_field)
 				do_after_event(game_field)
-	
+
 
 	view_.draw_total_score(pg, screen, game_field)
+
+
+
+
 	# move animation
 	for row in game_field: 
 		for block in row: 
-			view_.animation_move_block_top(block)
+			# view_.animation_move_block_top(block)
 			view_.draw_block( pg, screen, block)
+
+			# border
+			# pg.draw.rect( screen, (191,173,163), ( block['position']['x'], block['position']['y'], block['width'], block['height']), 10)
+
+	if model_.game_over(game_field) : 
+		font = pg.font.Font(None, 50)
+		text = font.render( 'Game Over', True, ( 180, 0, 0))
+		screen.blit( text, ( (w_width / 2 - text.get_rect().width / 2), (w_height / 2 - text.get_rect().height / 2) ) )

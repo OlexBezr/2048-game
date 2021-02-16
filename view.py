@@ -1,6 +1,6 @@
 from model import _2048_model as model_
 
-class _2048_view:
+class _2048_view():
 
 
 	@classmethod
@@ -72,6 +72,7 @@ class _2048_view:
 
 		screen.blit( text, ( 40, 10 ) )
 		pg.display.update()
+		pg.display.flip()
 
 	# @classmethod
 	# def animation_move_block_top(cls, game_field):
@@ -113,12 +114,12 @@ class _2048_view:
 	# 	block['positon']['x']
 	# 	block['positon']['y']
 
-	@classmethod
-	def animation_move_block_top(cls, block):
-		if block["step_top"] != 0 : 
-			step_one_tick = (( block['height'] + model_.BLOCK_MARGIN) / 100) * block["step_top"]
-			block['positon']['y'] -= step_one_tick
-			block["step_top"] -= 1
+	# @classmethod
+	# def animation_move_block_top(cls, block):
+	# 	if block["step_top"] != 0 : 
+	# 		step_one_tick = (( block['height'] + model_.BLOCK_MARGIN) / 100) * block["step_top"]
+	# 		block['position']['y'] -= step_one_tick
+	# 		block["step_top"] -= 1
 
 
 
