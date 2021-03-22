@@ -11,7 +11,7 @@ model_ = _2048_model()
 
 pg.init()
 pg.mixer.init()
-pg.display.set_caption("2054")
+pg.display.set_caption("2048")
 
 
 game_field = _2048_view.field_render( 4, 4 )
