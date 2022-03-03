@@ -1,37 +1,91 @@
-class _2048_model: 
-	@classmethod
-	def print_score(cls, game_field) :
-		row_l = []
-		print('-----')
-		for row in game_field:
-			score_row = []
-			for block in row: 
-				score_row.append( block['score'])
-			print(score_row)
-		print('-----')
-	
-		return row_l
+class _2048_model(): 
+	FIELD_PADDING_TOP = 100
+	FIELD_PADDING_LEFT = 20
+	BLOCK_MARGIN = 10
+
+	def __init__(self) :
+		self.field_padding_left = 20
+		self.field_padding_top = 100
+	@classmethod		
+	def field_render(cls, column, row): 
+		# return like this: 
+		# 
+		# [
+		# 	[
+		# 		{'index': 0, 'score': 0, 'position': {'x': 25, 'y': 105}}, 
+		# 		{'index': 1, 'score': 0, 'position': {'x': 130, 'y': 105}}, 
+		# 		{'index': 2, 'score': 0, 'position': {'x': 235, 'y': 105}}, 
+		# 		{'index': 3, 'score': 0, 'position': {'x': 340, 'y': 105}}
+		# 	], 
+		# 	[
+		# 		{'index': 4, 'score': 0, 'position': {'x': 25, 'y': 210}}, 
+		# 		{'index': 5, 'score': 0, 'position': {'x': 130, 'y': 210}}, 
+		# 		{'index': 6, 'score': 0, 'position': {'x': 235, 'y': 210}}, 
+		# 		{'index': 7, 'score': 0, 'position': {'x': 340, 'y': 210}}
+		# 	]
+		# 	....
+		# ]
+
+		game_field = []
+		index_ = 0
 		
+		block_widht, block_height = 105, 105
+		
+		for i in range(0, row):
+			game_field.append([])
+			if i == 0 : 
+				position_y = _2048_model.FIELD_PADDING_TOP + _2048_model.BLOCK_MARGIN*i
+			else :
+				position_y = block_height * i + _2048_model.BLOCK_MARGIN*i + _2048_model.FIELD_PADDING_TOP 
+			
+			for j in range(0, column):
+				if j == 0: 
+					position_x = _2048_model.FIELD_PADDING_LEFT + _2048_model.BLOCK_MARGIN*j
+				else : 
+					position_x = block_widht * j + _2048_model.BLOCK_MARGIN*j + _2048_model.FIELD_PADDING_LEFT 
+					
+				game_field[-1].append({
+					'index' : index_,
+					'score' : 0,
+					'position' : {
+						'x': position_x,
+						'y': position_y
+					},
+					'width' : block_widht,
+					'height' : block_height,
+
+					'step_top' : 0,
+					'step_down' : 0,
+					'step_right' : 0,
+					'step_left' : 0
+				})
+
+				index_ +=1
+		return game_field
+
+
 	@classmethod
 	def move_top(cls, game_field) :
 		def step_top(): 
+			some_move = False
 			iteration = 1
-
 			while iteration < len(game_field): # прохожу column N раз что бы сдвинуть все
 				for row in game_field: 
-					print('+++',iteration)
-					cls.print_score(game_field)
 					index_r = game_field.index(row)
 					if not index_r-1 < 0: 
 						for block in row: 
 							index_b = row.index(block)
 							try: 
-								if game_field[index_r-1][index_b]['score'] == 0: # если выше чисто
+								if game_field[index_r-1][index_b]['score'] == 0 and block['score'] != 0: # если выше чисто и текущий блок не 0
 									game_field[index_r-1][index_b]['score'] = block['score'] # заменяю score
 									block['score'] = 0 # текущий блок очищаю
+
+									game_field[index_r-1][index_b]['step_top'] += 1
+									some_move = True
 							except IndexError: 
-								continue
+								pass
 				iteration +=1
+			return some_move
 		def join_blocks() :
 			for row in game_field: 
 				index_r = game_field.index(row)
@@ -44,38 +98,39 @@ class _2048_model:
 								game_field[index_r+1][index_b]['score'] = 0 # тот что ниже очищаю
 								step_top() # еще раз поднимаю все блоки
 						except IndexError: 
-							continue
+							pass
 
-		step_top()
+		some_move = step_top()
 		join_blocks()
+		return some_move
 
 	@classmethod
 	def move_down(cls, game_field) :
 		def step_down(): 
+			some_move = False
 			iteration = 1
 			while iteration < len(game_field): # прохожу column N раз что бы сдвинуть все
 				for row in game_field: 
-					print('+++',iteration)
-					cls.print_score(game_field)
 					index_r = game_field.index(row)
 					if not index_r+1 > len(game_field): 
 						for block in row: 
 							index_b = row.index(block)
-							
 							try: 
 								if game_field[index_r+1][index_b]['score'] == 0: # если выше чисто
 									game_field[index_r+1][index_b]['score'] = block['score'] # заменяю score
 									block['score'] = 0 # текущий блок очищаю
+									some_move = True
 							except IndexError: 
-								continue
+								pass
 				iteration +=1
+			return some_move
 		def join_blocks() :
 			# здесь нужно проходить row с конца
-			len_game_field = len(game_field)-1
+			count_row = len(game_field)-1
 
-			while len_game_field > 0 : 
+			while count_row >= 0 : 
 			# for row in game_field: 
-				row = game_field[len_game_field]
+				row = game_field[count_row]
 				index_r = game_field.index(row)
 				if not index_r-1 < 0: 
 					for block in row: 
@@ -86,51 +141,91 @@ class _2048_model:
 								game_field[index_r-1][index_b]['score'] = 0 # тот что ниже очищаю
 								step_down() # еще раз поднимаю все блоки
 						except IndexError: 
-							continue
-				len_game_field -=1
+							pass
+				count_row -=1
 
-		step_down()
+		some_move = step_down()
 		join_blocks()
+		return some_move
 		
-	# [
-	# 	[0,2,,0]
-	# 	[0,4,0,0]
-	# 	[0,2,0,0]
-	# 	[0,0,0,0]
-	# ]
 	@classmethod
 	def move_left(cls, game_field) :
-		iteration = 1
-		while iteration < len(game_field): # прохожу row N раз что бы сдвинуть все
+		def step_left():
+			some_move = False
+			iteration = 1
+			while iteration < len(game_field): # прохожу row N раз что бы сдвинуть все
+				for row in game_field: 
+					for block in row:
+						index_b = row.index(block)
+						if not index_b-1 < 0: 
+							try:
+								if row[index_b-1]['score'] == 0: # если левый блок пустой
+									row[index_b-1]['score'] = block['score'] # заменяю score
+									block['score'] = 0 # текущий блок очищаю
+									some_move = True
+							except IndexError: 
+								pass
+				iteration +=1
+			return some_move
+		def join_blocks():
 			for row in game_field: 
-				print('+++',iteration)
-				cls.print_score(game_field)
-				for block in row:
+				# index_r = game_field.index(row)
+				for block in row: 
 					index_b = row.index(block)
-					if not index_b-1 < 0: 
-						try:
-							if row[index_b-1]['score'] == 0: # если левый блок пустой
-								row[index_b-1]['score'] = block['score'] # заменяю score
-								block['score'] = 0 # текущий блок очищаю
+					if not index_b-1 < 0:
+						try: 
+							if row[index_b-1]['score'] == row[index_b]['score']: # если левый блок такой же как и текущий
+								row[index_b]['score'] = row[index_b]['score']*2 # удваитаю текущий блок
+								row[index_b-1]['score'] = 0 # тот что левее очищаю
+								step_left() # еще раз сдвигаю все блоки
 						except IndexError: 
-							continue
-			iteration +=1
+							pass
+		some_move = step_left()
+		join_blocks()
+		return some_move
 	
 	@classmethod
 	def move_right(cls, game_field) :
-		iteration = 1
-		while iteration < len(game_field): # прохожу row N раз что бы сдвинуть все
+		def step_right():
+			some_move = False
+			iteration = 1
+			while iteration < len(game_field): # прохожу row N раз что бы сдвинуть все
+				for row in game_field: 
+					for block in row:
+						index_b = row.index(block)
+						if not index_b+1 > len(row): 
+							try: 
+								if row[index_b+1]['score'] == 0: # если левый блок пустой
+									row[index_b+1]['score'] = block['score'] # заменяю score
+									row[index_b]['score'] = 0 # текущий блок очищаю
+									some_move = True
+							except IndexError: 
+								pass
+				iteration +=1
+			return some_move
+
+		def join_blocks():
+			# здесь так же нужно начиноть с другой сторовы, иначе все что в row есть соединится
+			# like [2,2,2,2] -> [0,0,0,8], а должно быть [0,0,4,4]
 			for row in game_field: 
-				for block in row:
+				# index_r = game_field.index(row)a
+				count_block = len(row)-1
+				while count_block >= 0:
+				# for block in row: 
+					block = row[count_block]
 					index_b = row.index(block)
-					if not index_b+1 > len(row): 
+					if not index_b+1 > len(row):
 						try: 
-							if row[index_b+1]['score'] == 0: # если левый блок пустой
-								row[index_b+1]['score'] = block['score'] # заменяю score
-								row[index_b]['score'] = 0 # текущий блок очищаю
+							if row[index_b+1]['score'] == row[index_b]['score']: # если правый блок такой же как и текущий
+								row[index_b]['score'] = row[index_b]['score']*2 # удваитаю текущий блок
+								row[index_b+1]['score'] = 0 # тот что правее очищаю
+								step_right() # еще раз сдвигаю все блоки
 						except IndexError: 
-							continue
-			iteration +=1
+							pass
+					count_block -= 1
+		some_move = step_right()
+		join_blocks()
+		return some_move
 
 	@classmethod
 	def get_empty_blocks(cls, game_field) :
@@ -161,3 +256,59 @@ class _2048_model:
 		else : 
 			game_field[ row ][ col ]['score'] = 2
 		return random_pos
+
+	@classmethod
+	def get_total_score(cls, game_field):
+		total_score = 0
+		for row in game_field:
+			for block in row:
+				total_score += block['score']
+
+		return str(total_score)
+
+	@classmethod
+	def game_over(cls, game_field) :
+		g = []
+		for row in game_field:
+			for block in row: 
+				g.append( block['score'] )
+
+		if all(g): # если все блоки заполнены
+			available_move = []
+			for row in game_field:
+				index_r = game_field.index(row)
+				for block in row: 
+					index_b = row.index(block)
+					try: 
+						if game_field[index_r-1][index_b]['score'] == block['score']: # верхний
+							available_move = True
+							break
+					except: 
+						pass
+
+					try: 
+						if game_field[index_r+1][index_b]['score'] == block['score'] : # нижний
+							available_move = True
+							break
+					except: 
+						pass
+
+					try:
+						if game_field[index_r][index_b+1]['score'] == block['score']: # правый
+							available_move = True
+							break
+					except: 
+						pass
+
+					try: 
+						if game_field[index_r][index_b-1]['score'] == block['score'] : # левый
+							available_move = True
+							break
+					except: 
+						pass
+					
+			return available_move
+
+
+		return False
+
